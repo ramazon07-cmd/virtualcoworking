@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+venv/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+.out/
+
+# Logs
+logs
+*.log
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Django specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.mo
+*.pot
+migration/
+local_settings.py
+
+# Next.js specific
+.next/
+.nuxt/
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage reports
+coverage/
+*.info
+
+# Package manager
+.pnp/
+.pnp.js
+
+# Testing
+coverage/
+*.lcov
+
+# Misc
+*.min.js
+*.min.css
