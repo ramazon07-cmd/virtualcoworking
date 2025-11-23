@@ -14,7 +14,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ('id', 'user', 'bio', 'location', 'birth_date', 'avatar')
+        fields = ('id', 'user', 'bio', 'location', 'birth_date', 'avatar', 'role', 'company_name')
         
         
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -36,4 +36,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create(**validated_data)
         user.set_password(password)
         user.save()
+        
+        # Create user profile with default values
+        UserProfile.objects.create(user=user)
+        
         return user
