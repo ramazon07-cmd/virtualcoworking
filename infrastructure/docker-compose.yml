@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: vc_db
+    environment:
+      POSTGRES_DB: virtualcoworking
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - vc_network
+
+  # Redis for caching and channels
+  redis:
+    image: redis:7-alpine
+    container_name: vc_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - vc_network
+
+  # Celery worker
+  celery:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: vc_celery
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - ../backend:/app
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - vc_network
+
+  # Celery beat for scheduled tasks
+  celery-beat:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: vc_celery_beat
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - ../backend:/app
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - vc_network
+
+  # Django backend
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: vc_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ../backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - vc_network
+
+  # Next.js frontend
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: vc_frontend
+    command: npm run dev
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - vc_network
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: vc_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - vc_network
+
+  # Certbot for SSL certificates
+  certbot:
+    image: certbot/certbot
+    container_name: vc_certbot
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email you@example.com --agree-tos --no-eff-email --staging -d yourdomain.com
+
+volumes:
+  postgres_data:
+
+networks:
+  vc_network:
+    driver: bridge

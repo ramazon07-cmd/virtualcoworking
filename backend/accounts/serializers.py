@@ -14,9 +14,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ('id', 'user', 'bio', 'location', 'birth_date', 'avatar', 'role', 'company_name')
-        
-        
+        fields = ('id', 'user', 'bio', 'location', 'birth_date', 'avatar', 'role', 'company_name', 'timezone', 'is_verified', 'created_at', 'updated_at')
+        read_only_fields = ('is_verified', 'verification_token', 'created_at', 'updated_at')
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('bio', 'location', 'birth_date', 'avatar', 'company_name', 'timezone')
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)

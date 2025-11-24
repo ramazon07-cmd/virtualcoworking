@@ -1,0 +1,534 @@
+openapi: 3.0.3
+info:
+  title: VirtualCoworking API
+  description: API for the VirtualCoworking platform
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: https://api.virtualcoworking.com/api/v1
+    description: Production server
+
+paths:
+  /auth/register/:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                password_confirm:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+
+  /auth/login/:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+
+  /auth/token/:
+    post:
+      summary: Obtain JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Token obtained successfully
+        '401':
+          description: Invalid credentials
+
+  /auth/profile/:
+    get:
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /teams/:
+    get:
+      summary: List teams
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Teams retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+    post:
+      summary: Create a new team
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamCreate'
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+
+  /teams/{id}/:
+    get:
+      summary: Get team details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Team details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+    put:
+      summary: Update team
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamUpdate'
+      responses:
+        '200':
+          description: Team updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+    delete:
+      summary: Delete team
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Team deleted successfully
+
+  /notifications/:
+    get:
+      summary: List notifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+  /calendar/events/:
+    get:
+      summary: List events
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      summary: Create a new event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreate'
+      responses:
+        '201':
+          description: Event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /focus/sessions/:
+    get:
+      summary: List focus sessions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Focus sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FocusSession'
+    post:
+      summary: Create a new focus session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FocusSessionCreate'
+      responses:
+        '201':
+          description: Focus session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FocusSession'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          $ref: '#/components/schemas/User'
+        bio:
+          type: string
+        location:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        avatar:
+          type: string
+        role:
+          type: string
+          enum: [owner, admin, member]
+        company_name:
+          type: string
+        timezone:
+          type: string
+        is_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        bio:
+          type: string
+        location:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        avatar:
+          type: string
+        company_name:
+          type: string
+        timezone:
+          type: string
+
+    Team:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        owner:
+          $ref: '#/components/schemas/User'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+
+    TeamCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    TeamUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        recipient:
+          $ref: '#/components/schemas/User'
+        team:
+          $ref: '#/components/schemas/Team'
+        title:
+          type: string
+        message:
+          type: string
+        notification_type:
+          type: string
+          enum: [info, warning, error, success]
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        read_at:
+          type: string
+          format: date-time
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        event_type:
+          type: string
+          enum: [meeting, deadline, reminder, other]
+        created_by:
+          $ref: '#/components/schemas/User'
+        team:
+          $ref: '#/components/schemas/Team'
+        attendees:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        is_all_day:
+          type: boolean
+        location:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EventCreate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        event_type:
+          type: string
+          enum: [meeting, deadline, reminder, other]
+        team:
+          type: integer
+        attendees:
+          type: array
+          items:
+            type: integer
+        is_all_day:
+          type: boolean
+        location:
+          type: string
+
+    FocusSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          $ref: '#/components/schemas/User'
+        team:
+          $ref: '#/components/schemas/Team'
+        focus_type:
+          type: string
+          enum: [pomodoro, custom, deep_work]
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        actual_duration_minutes:
+          type: integer
+        is_completed:
+          type: boolean
+        interruptions:
+          type: integer
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    FocusSessionCreate:
+      type: object
+      properties:
+        focus_type:
+          type: string
+          enum: [pomodoro, custom, deep_work]
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        team:
+          type: integer
+        notes:
+          type: string

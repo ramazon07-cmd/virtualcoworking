@@ -1,182 +1,270 @@
-# Virtual Co-working Space
+# VirtualCoworking
 
-A minimal viable SaaS web application for remote teams to collaborate, communicate, and stay productive.
+A fully production-ready, scalable, secure, enterprise-grade SaaS platform for virtual co-working spaces.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Development Setup](#development-setup)
+- [API Documentation](#api-documentation)
+- [Deployment](#deployment)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
+VirtualCoworking is a comprehensive platform that enables remote teams to collaborate effectively through virtual co-working spaces. It provides tools for team management, real-time communication, task tracking, focus sessions, and productivity analytics.
+
+## Features
+
+### User & Authentication
+- User registration with email verification
+- JWT-based authentication with refresh token rotation
+- Role-based access control (Owner, Admin, Member)
+- User profiles with avatar, bio, timezone, and company information
+
+### Team Management
+- Team creation and management
+- Role-based permissions
+- Member invitation system
+- Team analytics and productivity metrics
+
+### Real-Time Communication
+- WebSocket-based chat rooms per team
+- Typing indicators
+- Read receipts
+- Online/offline presence status
+
+### Task Management (Kanban)
+- Boards, columns, and task organization
+- Task priorities, labels, and assignees
+- Due dates and reminders
+- Subtasks and comments
+- File attachments with S3 storage
+
+### Focus Timer
+- Pomodoro-style focus sessions
+- Custom and deep work sessions
+- Session tracking and statistics
+- Daily and weekly focus goals
+
+### Calendar & Scheduling
+- Team and personal event management
+- Meeting scheduling
+- Reminders and notifications
+- Google Calendar integration
+
+### Video Conferencing
+- WebRTC-based video calls
+- Meeting room management
+- Participant tracking
+- Recording capabilities
+
+### Analytics & Reporting
+- Team productivity dashboards
+- Task completion rates
+- Focus metrics and heatmaps
+- Work-hour analytics
+
+### Notifications
+- Real-time in-app notifications
+- Email notifications
+- Notification preferences
+
+### File Sharing
+- Secure file upload and storage
+- Team and personal file organization
+- File versioning
+- Access controls
+
+### Integrations
+- Google Workspace integration
+- Slack integration
+- GitHub/Notion integration (planned)
+
+## Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐
+│   Frontend      │    │   Load Balancer  │
+│   (Next.js)     │◄──►│   (Nginx)        │
+└─────────────────┘    └──────────────────┘
+                                │
+        ┌───────────────────────┼───────────────────────┐
+        │                       │                       │
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Backend       │    │   PostgreSQL     │    │   Redis         │
+│   (Django)      │◄──►│   (Database)     │    │   (Cache/WS)    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+        │                       │                       │
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Celery        │    │   S3 Storage     │    │   SMTP Server   │
+│   (Workers)     │    │   (Files)        │    │   (Email)       │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Backend Architecture
+- **Django Monolith** with modular apps
+- **PostgreSQL** for primary data storage
+- **Redis** for caching, WebSocket layers, and rate limiting
+- **Celery** with Redis for asynchronous task processing
+- **JWT** for stateless authentication
+- **Django Channels** for WebSocket communication
+- **AWS S3** for file storage
+
+### Frontend Architecture
+- **Next.js 14** with App Router
+- **TypeScript** for type safety
+- **React Query** for server state management
+- **Zustand** for client state management
+- **TailwindCSS** with shadcn/ui for styling
+- **WebSockets** for real-time features
 
 ## Tech Stack
 
 ### Backend
-- Python + Django + Django Channels (WebSockets for real-time features)
-- PostgreSQL (free-tier) or SQLite
-- Django REST Framework for API
-- Django Channels for real-time chat
+- Python 3.12
+- Django 5.2
+- Django REST Framework
+- Django Channels
+- PostgreSQL
+- Redis
+- Celery
+- JWT Authentication
+- AWS S3
 
 ### Frontend
-- React + Next.js
-- Tailwind CSS for styling
+- Next.js 14
 - TypeScript
+- React Query
+- Zustand
+- TailwindCSS
+- shadcn/ui
+- WebSockets
 
-### Features
-1. Team creation & role management
-2. Real-time chat & small group video calls (MVP: text chat first)
-3. Task tracking & Kanban boards
-4. Focus timer (Pomodoro-style)
-5. Analytics: basic team and individual productivity dashboard
-6. File sharing & notes
+### Infrastructure
+- Docker & Docker Compose
+- Nginx (Reverse Proxy)
+- Let's Encrypt (SSL)
+- GitHub Actions (CI/CD)
 
 ## Getting Started
 
-### Backend Setup
+### Prerequisites
 
-1. Navigate to the backend directory:
+- Python 3.12+
+- Node.js 18+
+- Docker & Docker Compose
+- PostgreSQL (for local development)
+- Redis (for local development)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/virtualcoworking.git
+   cd virtualcoworking
+   ```
+
+2. Set up the backend:
    ```bash
    cd backend
-   ```
-
-2. Create a virtual environment (if not already created):
-   ```bash
-   python3 -m venv venv
+   python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
    pip install -r requirements.txt
-   ```
-
-4. Run migrations:
-   ```bash
    python manage.py migrate
-   ```
-
-5. Create a superuser:
-   ```bash
    python manage.py createsuperuser
    ```
 
-6. Start the development server:
+3. Set up the frontend:
    ```bash
-   python manage.py runserver
-   ```
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend/virtual-coworking
-   ```
-
-2. Install dependencies:
-   ```bash
+   cd ../frontend
    npm install
    ```
 
-3. Start the development server:
+### Development Setup
+
+1. Start the backend services:
    ```bash
+   # In backend directory
+   python manage.py runserver
+   ```
+
+2. Start the frontend:
+   ```bash
+   # In frontend directory
    npm run dev
    ```
 
-## Project Structure
+3. For full development environment with Docker:
+   ```bash
+   cd infrastructure
+   docker-compose up -d
+   ```
 
-```
-virtualcoworking/
-├── backend/           # Django backend application
-│   ├── accounts/      # User authentication and profiles
-│   ├── analytics/     # Productivity analytics
-│   ├── chat/          # Real-time chat functionality
-│   ├── files/         # File sharing and notes
-│   ├── tasks/         # Task management and Kanban boards
-│   ├── teams/         # Team creation and management
-│   ├── timer/         # Pomodoro-style focus timer
-│   ├── virtualcoworking/  # Main Django project settings
-│   ├── manage.py      # Django management script
-│   ├── requirements.txt   # Python dependencies
-│   └── venv/          # Python virtual environment
-└── frontend/          # Next.js frontend application
-    └── virtual-coworking/
-        ├── src/
-        │   ├── app/     # Next.js app directory
-        │   └── components/ # Reusable React components
-        ├── public/      # Static assets
-        └── package.json # Node.js dependencies
-```
+## API Documentation
 
-## API Endpoints
+API documentation is available through Swagger/OpenAPI:
 
-### Authentication
-- `POST /api/auth/register/` - User registration
-- `POST /api/auth/login/` - User login
-- `POST /api/auth/logout/` - User logout
-- `GET /api/auth/current-user/` - Get current user info
-- `GET /api/auth/profile/` - Get user profile
-- `PUT /api/auth/profile/update/` - Update user profile
+- **Swagger UI**: `http://localhost:8000/api/docs/`
+- **OpenAPI Schema**: `http://localhost:8000/api/schema/`
 
-### Teams
-- `GET /api/teams/` - List user's teams
-- `POST /api/teams/create/` - Create a new team
-- `GET /api/teams/<team_id>/` - Get team details
-- `PUT /api/teams/<team_id>/update/` - Update team
-- `DELETE /api/teams/<team_id>/delete/` - Delete team
-- `GET /api/teams/<team_id>/members/` - List team members
-- `POST /api/teams/<team_id>/members/add/` - Add member to team
-- `DELETE /api/teams/<team_id>/members/<user_id>/remove/` - Remove member from team
-- `PUT /api/teams/<team_id>/members/<user_id>/role/` - Update member role
-
-### Tasks
-- `GET /api/tasks/boards/` - List user's task boards
-- `POST /api/tasks/boards/create/` - Create a new task board
-- `GET /api/tasks/boards/<board_id>/` - Get board details
-- `PUT /api/tasks/boards/<board_id>/update/` - Update board
-- `DELETE /api/tasks/boards/<board_id>/delete/` - Delete board
-- `GET /api/tasks/columns/<column_id>/tasks/` - List tasks in a column
-- `GET /api/tasks/` - List user's tasks
-- `POST /api/tasks/create/` - Create a new task
-- `GET /api/tasks/<task_id>/` - Get task details
-- `PUT /api/tasks/<task_id>/update/` - Update task
-- `DELETE /api/tasks/<task_id>/delete/` - Delete task
-- `PUT /api/tasks/<task_id>/move/` - Move task to another column
-- `PUT /api/tasks/<task_id>/assign/` - Assign task to user
-
-### Timer
-- `GET /api/timer/sessions/` - List user's timer sessions
-- `POST /api/timer/sessions/start/` - Start a new timer session
-- `POST /api/timer/sessions/<session_id>/stop/` - Stop a timer session
-- `DELETE /api/timer/sessions/<session_id>/delete/` - Delete a timer session
-- `GET /api/timer/stats/` - Get user's timer statistics
-
-### Analytics
-- `GET /api/analytics/team/<team_id>/` - Get team analytics
-- `GET /api/analytics/user/` - Get user analytics
-- `GET /api/analytics/team/<team_id>/productivity/` - Get team productivity report
-
-### Files
-- `GET /api/files/files/` - List team files
-- `POST /api/files/files/upload/` - Upload a file
-- `GET /api/files/files/<file_id>/download/` - Download a file
-- `DELETE /api/files/files/<file_id>/delete/` - Delete a file
-- `GET /api/files/notes/` - List team notes
-- `POST /api/files/notes/create/` - Create a note
-- `GET /api/files/notes/<note_id>/` - Get note details
-- `PUT /api/files/notes/<note_id>/update/` - Update a note
-- `DELETE /api/files/notes/<note_id>/delete/` - Delete a note
+See [API Specification](docs/api-spec.yaml) for detailed API documentation.
 
 ## Deployment
 
-### Backend
-The backend can be deployed to Heroku or Render free-tier.
+See [Deployment Instructions](docs/deployment-instructions.md) for detailed deployment guidelines.
 
-### Frontend
-The frontend can be deployed to Vercel.
+### Quick Deployment with Docker
 
-## Future Enhancements
+```bash
+cd infrastructure
+docker-compose up -d
+```
 
-1. Video call integration
-2. Advanced analytics and reporting
-3. Mobile app development
-4. Integration with third-party tools (Google Drive, Slack, etc.)
-5. Advanced task management features (subtasks, dependencies, etc.)
-6. Customizable dashboards
-7. Advanced team collaboration features
+## Testing
+
+### Backend Tests
+
+```bash
+cd backend
+python manage.py test
+```
+
+### Frontend Tests
+
+```bash
+cd frontend
+npm run test
+```
+
+### Load Testing
+
+```bash
+# Install k6
+# Run load tests
+k6 run tests/load-testing.js
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a pull request
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**VirtualCoworking** - Bringing remote teams together, one virtual workspace at a time.

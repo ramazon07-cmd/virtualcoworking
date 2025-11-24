@@ -20,6 +20,7 @@ urlpatterns = [
     path('current-user/', views.current_user, name='current_user'),
     path('profile/', views.user_profile, name='user_profile'),
     path('profile/update/', views.update_profile, name='update_profile'),
+    path('verify-email/<uuid:token>/', views.verify_email, name='verify_email'),
     path('csrf/', get_csrf, name='csrf'),
     
     # JWT endpoints

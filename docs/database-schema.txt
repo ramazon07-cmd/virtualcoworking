@@ -1,0 +1,284 @@
+VirtualCoworking Database Schema
+
+Users & Authentication
+---------------------
+User (Django auth_user)
+- id (PK)
+- username
+- email
+- first_name
+- last_name
+- password
+- is_active
+- is_staff
+- is_superuser
+- date_joined
+- last_login
+
+UserProfile
+- id (PK)
+- user_id (FK to User.id)
+- bio
+- location
+- birth_date
+- avatar
+- role (owner, admin, member)
+- company_name
+- timezone
+- is_verified
+- verification_token
+- created_at
+- updated_at
+
+Teams
+-----
+Team
+- id (PK)
+- name
+- description
+- owner_id (FK to User.id)
+- created_at
+- updated_at
+
+TeamMembership
+- id (PK)
+- user_id (FK to User.id)
+- team_id (FK to Team.id)
+- role (owner, admin, member)
+- joined_at
+
+Chat
+----
+Room
+- id (PK)
+- name
+- team_id (FK to Team.id)
+- created_at
+
+Message
+- id (PK)
+- room_id (FK to Room.id)
+- user_id (FK to User.id)
+- content
+- timestamp
+
+Tasks (Kanban)
+--------------
+Board
+- id (PK)
+- name
+- team_id (FK to Team.id)
+- created_by_id (FK to User.id)
+- created_at
+- updated_at
+
+Column
+- id (PK)
+- name
+- board_id (FK to Board.id)
+- order
+- created_at
+
+Task
+- id (PK)
+- title
+- description
+- column_id (FK to Column.id)
+- assignee_id (FK to User.id)
+- priority (low, medium, high, urgent)
+- due_date
+- created_by_id (FK to User.id)
+- created_at
+- updated_at
+
+Subtask
+- id (PK)
+- task_id (FK to Task.id)
+- title
+- is_completed
+- created_at
+- updated_at
+
+TaskComment
+- id (PK)
+- task_id (FK to Task.id)
+- user_id (FK to User.id)
+- content
+- created_at
+- updated_at
+
+TaskAttachment
+- id (PK)
+- task_id (FK to Task.id)
+- file_url
+- filename
+- uploaded_by_id (FK to User.id)
+- created_at
+
+Labels
+- id (PK)
+- name
+- color
+- team_id (FK to Team.id)
+
+TaskLabel (Many-to-Many)
+- task_id (FK to Task.id)
+- label_id (FK to Label.id)
+
+Focus Timer
+-----------
+FocusSession
+- id (PK)
+- user_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- focus_type (pomodoro, custom, deep_work)
+- start_time
+- end_time
+- duration_minutes
+- actual_duration_minutes
+- is_completed
+- interruptions
+- notes
+- created_at
+
+DailyFocusGoal
+- id (PK)
+- user_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- date
+- target_hours
+- actual_hours
+- created_at
+- updated_at
+
+FocusStat
+- id (PK)
+- user_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- date
+- total_focus_minutes
+- completed_sessions
+- avg_session_duration
+- interruptions
+- created_at
+
+Notifications
+-------------
+Notification
+- id (PK)
+- recipient_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- title
+- message
+- notification_type (info, warning, error, success)
+- is_read
+- created_at
+- read_at
+
+Calendar
+--------
+Event
+- id (PK)
+- title
+- description
+- start_time
+- end_time
+- event_type (meeting, deadline, reminder, other)
+- created_by_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- is_all_day
+- location
+- created_at
+- updated_at
+
+EventAttendee (Many-to-Many)
+- event_id (FK to Event.id)
+- user_id (FK to User.id)
+
+Reminder
+- id (PK)
+- event_id (FK to Event.id)
+- reminder_type (email, notification, both)
+- minutes_before
+- sent
+- created_at
+
+Video Calls
+-----------
+Meeting
+- id (PK)
+- title
+- description
+- start_time
+- end_time
+- created_by_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- meeting_link
+- status (scheduled, in_progress, completed, cancelled)
+- recording_url
+- created_at
+- updated_at
+
+MeetingParticipant
+- id (PK)
+- meeting_id (FK to Meeting.id)
+- user_id (FK to User.id)
+- join_time
+- leave_time
+- status (invited, joined, left)
+
+Integrations
+------------
+Integration
+- id (PK)
+- user_id (FK to User.id)
+- integration_type (google_calendar, slack, github, notion, zoom, microsoft_teams)
+- access_token
+- refresh_token
+- expires_at
+- is_active
+- created_at
+- updated_at
+
+SyncLog
+- id (PK)
+- integration_id (FK to Integration.id)
+- sync_type
+- status (pending, in_progress, completed, failed)
+- started_at
+- completed_at
+- error_message
+- records_synced
+
+Files
+-----
+File
+- id (PK)
+- name
+- file_url
+- size
+- uploaded_by_id (FK to User.id)
+- team_id (FK to Team.id, nullable)
+- created_at
+- updated_at
+
+Analytics
+---------
+TeamAnalytics
+- id (PK)
+- team_id (FK to Team.id)
+- date
+- active_members
+- completed_tasks
+- total_focus_minutes
+- meetings_count
+- created_at
+
+UserAnalytics
+- id (PK)
+- user_id (FK to User.id)
+- date
+- completed_tasks
+- focus_minutes
+- meetings_attended
+- created_at
