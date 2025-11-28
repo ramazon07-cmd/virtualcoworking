@@ -94,12 +94,14 @@ WSGI_APPLICATION = "virtualcoworking.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        "NAME": os.environ.get("DB_NAME", "virtualcoworking"),
-        "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        # "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
+        # "NAME": os.environ.get("DB_NAME", "virtualcoworking"),
+        # "USER": os.environ.get("DB_USER", "postgres"),
+        # "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
+        # "HOST": os.environ.get("DB_HOST", "localhost"),
+        # "PORT": os.environ.get("DB_PORT", "5433"),
     }
 }
 
@@ -239,9 +241,14 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Frontend URL
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

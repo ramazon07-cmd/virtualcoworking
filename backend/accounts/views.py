@@ -2,24 +2,42 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile
 from .serializers import UserSerializer, UserProfileSerializer, UserProfileUpdateSerializer, UserRegistrationSerializer
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_exempt
 def register(request):
+    print('Received registration data:', request.data)  # Log received data for debugging
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        # Send verification email
-        send_verification_email(user)
-        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        # Send verification email (non-critical, so we catch any errors)
+        try:
+            send_verification_email(user)
+        except Exception as e:
+            print(f'Failed to send verification email: {e}')
+            # We don't return an error here because email sending is not critical for registration
+        
+        # Generate JWT tokens for the newly registered user
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+        }, status=status.HTTP_201_CREATED)
+    print('Registration errors:', serializer.errors)  # Log errors for debugging
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -33,10 +51,13 @@ def send_verification_email(user):
             f'Hello {user.username},\n\nPlease verify your email address by clicking the link below:\n\n{verification_url}\n\nThank you for joining VirtualCoworking!',
             settings.DEFAULT_FROM_EMAIL,
             [user.email],
-            fail_silently=False,
+            fail_silently=True,  # Fail silently to avoid crashing the registration process
         )
     except UserProfile.DoesNotExist:
         pass  # User profile not created yet
+    except Exception as e:
+        print(f'Error sending verification email: {e}')
+        # Fail silently to avoid crashing the registration process
 
 
 @api_view(['POST'])
